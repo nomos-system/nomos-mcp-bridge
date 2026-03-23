@@ -1,13 +1,15 @@
 # nomos MCP Bridge
 
-A local MCP proxy that manages connections to one or more [nomos](https://nomos-system.com) system controllers. Instead of configuring each controller individually in your Claude Desktop config, the bridge lets you register multiple controllers and switch between them via natural language.
+A local MCP proxy that manages connections to one or more [nomos](https://nomos-system.com) system controllers. Instead of configuring each controller individually in your AI client, the bridge lets you register multiple controllers and switch between them via natural language.
+
+Works with any MCP-compatible AI client — Claude Desktop, Cursor, Windsurf, ChatGPT Desktop, and more.
 
 ## How It Works
 
 ```
-Claude Desktop ──stdio──► nomos-mcp-bridge ──Streamable HTTP──► nomos Controller A
-                          (local proxy)    ──Streamable HTTP──► nomos Controller B
-                                           ──Streamable HTTP──► nomos Controller C
+MCP Client ──stdio──► nomos-mcp-bridge ──Streamable HTTP──► nomos Controller A
+                      (local proxy)    ──Streamable HTTP──► nomos Controller B
+                                       ──Streamable HTTP──► nomos Controller C
 ```
 
 The bridge runs as a local MCP server (via stdio) and connects to nomos controllers over the network using the MCP Streamable HTTP transport. All tools, resources, and prompts from the connected controller are dynamically proxied — the bridge stays lightweight and always exposes exactly the capabilities the controller supports.
@@ -30,9 +32,13 @@ npm install
 npm run build
 ```
 
-## Claude Desktop Configuration
+## MCP Client Configuration
 
-Add the bridge to your `claude_desktop_config.json`:
+The bridge works with any AI client that supports the [Model Context Protocol](https://modelcontextprotocol.io). Below are configuration examples for popular clients.
+
+### Claude Desktop
+
+Add to your `claude_desktop_config.json`:
 
 ```json
 {
@@ -45,35 +51,67 @@ Add the bridge to your `claude_desktop_config.json`:
 }
 ```
 
-Or if installed globally:
+### Cursor
+
+Add to your Cursor MCP settings (`.cursor/mcp.json`):
 
 ```json
 {
   "mcpServers": {
     "nomos": {
-      "command": "nomos-mcp-bridge"
+      "command": "node",
+      "args": ["/path/to/nomos-mcp-bridge/dist/index.js"]
     }
   }
 }
+```
+
+### Windsurf
+
+Add to your Windsurf MCP config (`~/.codeium/windsurf/mcp_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "nomos": {
+      "command": "node",
+      "args": ["/path/to/nomos-mcp-bridge/dist/index.js"]
+    }
+  }
+}
+```
+
+### Claude Code (CLI)
+
+```bash
+claude mcp add nomos node /path/to/nomos-mcp-bridge/dist/index.js
+```
+
+### Other MCP Clients
+
+Any client supporting stdio-based MCP servers can use the bridge. The command is:
+
+```
+node /path/to/nomos-mcp-bridge/dist/index.js
 ```
 
 ## Adding Controllers
 
 ### Option 1: Via the Setup Web Page
 
-Tell Claude to **open the setup page**:
+Tell your AI assistant to **open the setup page**:
 
 > "Open the nomos setup page"
 
 This opens a local web UI in your browser where you can enter the controller name, URL, and MCP token.
 
-### Option 2: Via Claude
+### Option 2: Via AI Chat
 
-Tell Claude to add a controller:
+Tell your AI assistant to add a controller:
 
 > "Add my nomos controller 'Wohnhaus' at 192.168.1.100 with token abc123"
 
-Claude will use the `add_controller` tool to register it.
+The assistant will use the `add_controller` tool to register it.
 
 ### Option 3: Manually
 
@@ -95,7 +133,7 @@ Edit `~/.config/nomos-mcp/controllers.json`:
 
 ## Usage
 
-Once controllers are registered, simply tell Claude which one to use:
+Once controllers are registered, simply tell your AI assistant which one to use:
 
 > "Connect to controller Wohnhaus"
 
@@ -103,7 +141,7 @@ Once controllers are registered, simply tell Claude which one to use:
 
 > "Show me all my controllers"
 
-After connecting, all nomos tools are available as if Claude were directly connected to the controller. You can:
+After connecting, all nomos tools are available as if the client were directly connected to the controller. You can:
 
 - Control devices ("Turn off the living room lights")
 - Create scenes and automations
@@ -131,7 +169,7 @@ Controller credentials are stored in `~/.config/nomos-mcp/controllers.json`. The
 
 - Tokens are stored in plain text in the config file. Ensure appropriate file permissions.
 - The setup web server only listens on `127.0.0.1` (localhost) and is not accessible from the network.
-- nomos controllers use HTTPS with self-signed certificates by default. Node.js may reject these — set `NODE_TLS_REJECT_UNAUTHORIZED=0` in the Claude Desktop config if needed:
+- nomos controllers use HTTPS with self-signed certificates by default. Node.js may reject these — set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your MCP client config if needed:
 
 ```json
 {
