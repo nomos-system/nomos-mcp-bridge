@@ -1,6 +1,6 @@
 # nomos MCP Bridge
 
-A local MCP proxy that manages connections to one or more [nomos](https://nomos-system.com) smart home controllers. Instead of configuring each controller individually in your Claude Desktop config, the bridge lets you register multiple controllers and switch between them via natural language.
+A local MCP proxy that manages connections to one or more [nomos](https://nomos-system.com) system controllers. Instead of configuring each controller individually in your Claude Desktop config, the bridge lets you register multiple controllers and switch between them via natural language.
 
 ## How It Works
 
@@ -15,7 +15,7 @@ The bridge runs as a local MCP server (via stdio) and connects to nomos controll
 ## Prerequisites
 
 - **Node.js** 18 or later
-- A **nomos controller** with MCP enabled (Settings > MCP) and a configured token
+- A **nomos system controller** with MCP enabled (Settings > MCP) and a configured token
 - **Network access** to the controller from your machine
 
 ## Installation
@@ -25,8 +25,9 @@ The bridge runs as a local MCP server (via stdio) and connects to nomos controll
 git clone https://github.com/nomos-system/nomos-mcp-bridge.git
 cd nomos-mcp-bridge
 
-# Install dependencies
+# Install dependencies and build
 npm install
+npm run build
 ```
 
 ## Claude Desktop Configuration
@@ -38,7 +39,7 @@ Add the bridge to your `claude_desktop_config.json`:
   "mcpServers": {
     "nomos": {
       "command": "node",
-      "args": ["/path/to/nomos-mcp-bridge/src/index.js"]
+      "args": ["/path/to/nomos-mcp-bridge/dist/index.js"]
     }
   }
 }
@@ -137,13 +138,22 @@ Controller credentials are stored in `~/.config/nomos-mcp/controllers.json`. The
   "mcpServers": {
     "nomos": {
       "command": "node",
-      "args": ["/path/to/nomos-mcp-bridge/src/index.js"],
+      "args": ["/path/to/nomos-mcp-bridge/dist/index.js"],
       "env": {
         "NODE_TLS_REJECT_UNAUTHORIZED": "0"
       }
     }
   }
 }
+```
+
+## Development
+
+```bash
+npm install        # Install dependencies
+npm run build      # Compile TypeScript to dist/
+npm run start      # Run the compiled bridge
+npm run dev        # Build and run in one step
 ```
 
 ## License
