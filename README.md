@@ -1,6 +1,6 @@
 # nomos MCP Bridge
 
-A local MCP proxy that manages connections to one or more [nomos](https://nomos-system.com) system controllers. Instead of configuring each controller individually in your AI client, the bridge lets you register multiple controllers and switch between them via natural language.
+A local MCP proxy that manages connections to one or more [nomos system](https://nomos-system.com) controllers. Instead of configuring each controller individually in your AI client, the bridge lets you register multiple controllers and switch between them via natural language.
 
 Works with any MCP-compatible AI client — Claude Desktop, Cursor, Windsurf, ChatGPT Desktop, and more.
 
@@ -17,7 +17,7 @@ The bridge runs as a local MCP server (via stdio) and connects to nomos controll
 ## Prerequisites
 
 - **Node.js** 18 or later
-- A **nomos system controller** with MCP enabled (Settings > MCP) and a configured token
+- A **nomos system controller** with MCP enabled (Skills > MCP) and a configured token
 - **Network access** to the controller from your machine
 
 ## Installation
