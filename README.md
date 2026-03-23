@@ -20,21 +20,9 @@ The bridge runs as a local MCP server (via stdio) and connects to nomos controll
 - A **nomos system controller** with MCP enabled (Skills > MCP) and a configured token
 - **Network access** to the controller from your machine
 
-## Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/nomos-system/nomos-mcp-bridge.git
-cd nomos-mcp-bridge
-
-# Install dependencies and build
-npm install
-npm run build
-```
-
 ## MCP Client Configuration
 
-The bridge works with any AI client that supports the [Model Context Protocol](https://modelcontextprotocol.io). Below are configuration examples for popular clients.
+The bridge works with any AI client that supports the [Model Context Protocol](https://modelcontextprotocol.io). No manual installation needed — just add the config and your client will run the bridge automatically via `npx`.
 
 ### Claude Desktop
 
@@ -44,8 +32,8 @@ Add to your `claude_desktop_config.json`:
 {
   "mcpServers": {
     "nomos": {
-      "command": "node",
-      "args": ["/path/to/nomos-mcp-bridge/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "nomos-mcp-bridge"]
     }
   }
 }
@@ -59,8 +47,8 @@ Add to your Cursor MCP settings (`.cursor/mcp.json`):
 {
   "mcpServers": {
     "nomos": {
-      "command": "node",
-      "args": ["/path/to/nomos-mcp-bridge/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "nomos-mcp-bridge"]
     }
   }
 }
@@ -74,8 +62,8 @@ Add to your Windsurf MCP config (`~/.codeium/windsurf/mcp_config.json`):
 {
   "mcpServers": {
     "nomos": {
-      "command": "node",
-      "args": ["/path/to/nomos-mcp-bridge/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "nomos-mcp-bridge"]
     }
   }
 }
@@ -84,7 +72,7 @@ Add to your Windsurf MCP config (`~/.codeium/windsurf/mcp_config.json`):
 ### Claude Code (CLI)
 
 ```bash
-claude mcp add nomos node /path/to/nomos-mcp-bridge/dist/index.js
+claude mcp add nomos -- npx -y nomos-mcp-bridge
 ```
 
 ### Other MCP Clients
@@ -92,7 +80,7 @@ claude mcp add nomos node /path/to/nomos-mcp-bridge/dist/index.js
 Any client supporting stdio-based MCP servers can use the bridge. The command is:
 
 ```
-node /path/to/nomos-mcp-bridge/dist/index.js
+npx -y nomos-mcp-bridge
 ```
 
 ## Adding Controllers
@@ -175,8 +163,8 @@ Controller credentials are stored in `~/.config/nomos-mcp/controllers.json`. The
 {
   "mcpServers": {
     "nomos": {
-      "command": "node",
-      "args": ["/path/to/nomos-mcp-bridge/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "nomos-mcp-bridge"],
       "env": {
         "NODE_TLS_REJECT_UNAUTHORIZED": "0"
       }
@@ -188,10 +176,19 @@ Controller credentials are stored in `~/.config/nomos-mcp/controllers.json`. The
 ## Development
 
 ```bash
-npm install        # Install dependencies
-npm run build      # Compile TypeScript to dist/
-npm run start      # Run the compiled bridge
-npm run dev        # Build and run in one step
+# Clone the repository
+git clone https://github.com/nomos-system/nomos-mcp-bridge.git
+cd nomos-mcp-bridge
+
+# Install dependencies and build
+npm install
+npm run build
+
+# Run
+npm run start
+
+# Or build and run in one step
+npm run dev
 ```
 
 ## License

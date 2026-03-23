@@ -3,13 +3,18 @@
   "version": "1.0.0",
   "description": "MCP proxy bridge for managing multiple nomos system controllers",
   "main": "dist/index.js",
+  "type": "module",
   "bin": {
     "nomos-mcp-bridge": "dist/index.js"
   },
+  "files": [
+    "dist/"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "tsc && node dist/index.js"
+    "dev": "tsc && node dist/index.js",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "nomos",
@@ -22,6 +27,11 @@
   ],
   "author": "nomos system",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nomos-system/nomos-mcp-bridge.git"
+  },
+  "homepage": "https://github.com/nomos-system/nomos-mcp-bridge",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
     "open": "^10.1.0",
