@@ -398,6 +398,13 @@ async function registerProxiedCapabilities(): Promise<void> {
         const message = e instanceof Error ? e.message : String(e);
         log('Error registering proxied prompts: ' + message);
     }
+
+    // ── Notify client that capabilities changed ──
+    try { server.sendToolListChanged(); } catch { /* not connected yet */ }
+    try { server.sendResourceListChanged(); } catch { /* not connected yet */ }
+    try { server.sendPromptListChanged(); } catch { /* not connected yet */ }
+
+    log(`Proxied ${registeredProxyTools.size} tools, ${registeredProxyResources.size} resources, ${registeredProxyPrompts.size} prompts.`);
 }
 
 // ── Startup ──────────────────────────────────
