@@ -255,8 +255,13 @@ interface JsonSchemaProperty {
     description?: string;
     enum?: [string, ...string[]];
     items?: JsonSchemaProperty;
+    properties?: Record<string, JsonSchemaProperty>;
+    required?: string[];
 }
 
+// Convert JSON Schema to Zod — keep it permissive so the controller
+// does the real validation. We only need enough structure for the
+// MCP client to generate reasonable arguments.
 function jsonSchemaToZod(prop: JsonSchemaProperty): z.ZodTypeAny {
     if (prop.enum && prop.enum.length > 0) {
         return z.enum(prop.enum);
@@ -276,7 +281,23 @@ function jsonSchemaToZod(prop: JsonSchemaProperty): z.ZodTypeAny {
             }
             return z.array(z.any());
         case 'object':
-            return z.object({}).passthrough();
+            if (prop.properties) {
+                const shape: Record<string, z.ZodTypeAny> = {};
+                const required = prop.required ?? [];
+                for (const key of Object.keys(prop.properties)) {
+                    const subProp = prop.properties[key];
+                    let zodType = jsonSchemaToZod(subProp);
+                    if (!required.includes(key)) {
+                        zodType = zodType.optional();
+                    }
+                    if (subProp.description) {
+                        zodType = zodType.describe(subProp.description);
+                    }
+                    shape[key] = zodType;
+                }
+                return z.object(shape).passthrough();
+            }
+            return z.record(z.any());
         default:
             return z.any();
     }
@@ -380,18 +401,45 @@ async function registerProxiedCapabilities(): Promise<void> {
             if (registeredProxyPrompts.has(prompt.name)) continue;
 
             const promptName = prompt.name;
-            server.registerPrompt(
-                promptName,
-                { description: prompt.description ?? '' },
-                async (args: Record<string, string>) => {
-                    try {
-                        return await proxy.getPrompt(promptName, args);
-                    } catch (e: unknown) {
-                        const message = e instanceof Error ? e.message : String(e);
-                        return { messages: [{ role: 'user' as const, content: { type: 'text' as const, text: 'Error: ' + message } }] };
-                    }
+            const promptArgs = (prompt as { arguments?: Array<{ name: string; description?: string; required?: boolean }> }).arguments;
+
+            if (promptArgs && promptArgs.length > 0) {
+                // Prompt declares arguments — build argsSchema so callback gets (args, extra)
+                const argsSchema: Record<string, z.ZodTypeAny> = {};
+                for (const arg of promptArgs) {
+                    let zodType: z.ZodTypeAny = z.string();
+                    if (arg.description) zodType = zodType.describe(arg.description);
+                    if (!arg.required) zodType = zodType.optional();
+                    argsSchema[arg.name] = zodType;
                 }
-            );
+
+                server.registerPrompt(
+                    promptName,
+                    { description: prompt.description ?? '', argsSchema },
+                    async (args: Record<string, string>) => {
+                        try {
+                            return await proxy.getPrompt(promptName, args);
+                        } catch (e: unknown) {
+                            const message = e instanceof Error ? e.message : String(e);
+                            return { messages: [{ role: 'user' as const, content: { type: 'text' as const, text: 'Error: ' + message } }] };
+                        }
+                    }
+                );
+            } else {
+                // No arguments — callback signature is (extra), not (args, extra)
+                server.registerPrompt(
+                    promptName,
+                    { description: prompt.description ?? '' },
+                    async () => {
+                        try {
+                            return await proxy.getPrompt(promptName);
+                        } catch (e: unknown) {
+                            const message = e instanceof Error ? e.message : String(e);
+                            return { messages: [{ role: 'user' as const, content: { type: 'text' as const, text: 'Error: ' + message } }] };
+                        }
+                    }
+                );
+            }
             registeredProxyPrompts.add(promptName);
         }
     } catch (e: unknown) {
