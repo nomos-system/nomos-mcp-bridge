@@ -297,7 +297,7 @@ function jsonSchemaToZod(prop: JsonSchemaProperty): z.ZodTypeAny {
                 }
                 return z.object(shape).passthrough();
             }
-            return z.record(z.any());
+            return z.record(z.string(), z.any());
         default:
             return z.any();
     }
@@ -416,9 +416,9 @@ async function registerProxiedCapabilities(): Promise<void> {
                 server.registerPrompt(
                     promptName,
                     { description: prompt.description ?? '', argsSchema },
-                    async (args: Record<string, string>) => {
+                    async (args) => {
                         try {
-                            return await proxy.getPrompt(promptName, args);
+                            return await proxy.getPrompt(promptName, args as Record<string, string>);
                         } catch (e: unknown) {
                             const message = e instanceof Error ? e.message : String(e);
                             return { messages: [{ role: 'user' as const, content: { type: 'text' as const, text: 'Error: ' + message } }] };
